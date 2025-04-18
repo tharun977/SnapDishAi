@@ -76,13 +76,13 @@ export function ImageUploader() {
   }
 
   return (
-    <Card className="w-full max-w-md border border-neutral-800 bg-black/50 backdrop-blur-md p-0 overflow-hidden">
+    <Card className="w-full max-w-md border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-black/50 backdrop-blur-md p-0 overflow-hidden">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex flex-col items-center justify-center">
           <div
             className={`relative flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-t-lg ${
-              preview ? "bg-black" : "bg-neutral-900/50"
-            } hover:bg-neutral-900 transition-colors`}
+              preview ? "bg-white dark:bg-black" : "bg-neutral-100 dark:bg-neutral-900/50"
+            } hover:bg-neutral-200 dark:hover:bg-neutral-900 transition-colors`}
             onClick={() => document.getElementById("file-upload")?.click()}
           >
             <input id="file-upload" type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
@@ -95,21 +95,22 @@ export function ImageUploader() {
               />
             ) : (
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <div className="mb-4 rounded-full bg-purple-900/50 p-3">
-                  <ImageIcon className="h-6 w-6 text-purple-400" />
+                <div className="mb-4 rounded-full bg-purple-100 dark:bg-purple-900/50 p-3">
+                  <ImageIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
-                <p className="mb-2 text-sm">
-                  <span className="font-semibold text-purple-400">Click to upload</span> or drag and drop
+                <p className="mb-2 text-sm text-neutral-700 dark:text-neutral-300">
+                  <span className="font-semibold text-purple-600 dark:text-purple-400">Click to upload</span> or drag
+                  and drop
                 </p>
-                <p className="text-xs text-neutral-400">PNG, JPG, GIF up to 10MB</p>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">PNG, JPG, GIF up to 10MB</p>
               </div>
             )}
           </div>
 
-          {error && <p className="mt-2 text-sm text-red-400 px-4">{error}</p>}
+          {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400 px-4">{error}</p>}
 
           {preview && (
-            <p className="mt-2 text-sm text-neutral-400 px-4">
+            <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 px-4">
               {image?.name} (
               {(image?.size || 0) / 1024 < 1000
                 ? `${Math.round((image?.size || 0) / 1024)} KB`
