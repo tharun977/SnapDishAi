@@ -8,6 +8,7 @@ import { Loader2, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { identifyDish } from "@/app/actions"
+import { toast } from "@/components/ui/use-toast"
 
 export function ImageUploader() {
   const router = useRouter()
@@ -62,13 +63,27 @@ export function ImageUploader() {
       const result = await identifyDish(formData)
 
       if (result.success) {
+        toast({
+          title: "Dish identified!",
+          description: `We identified this as ${result.recipeName}`,
+        })
         // Navigate to results page with the recipe ID
         router.push(`/recipe/${result.recipeId}`)
       } else {
         setError(result.error || "Failed to identify dish")
+        toast({
+          title: "Error",
+          description: result.error || "Failed to identify dish",
+          variant: "destructive",
+        })
       }
-    } catch (err) {
+    } catch (err: any) {
       setError("An error occurred. Please try again.")
+      toast({
+        title: "Error",
+        description: err.message || "An error occurred",
+        variant: "destructive",
+      })
       console.error(err)
     } finally {
       setIsUploading(false)
