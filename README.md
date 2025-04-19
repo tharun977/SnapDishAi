@@ -122,7 +122,7 @@
 Displays information about SnapDish AI, its mission, story, and the team behid it.
 
 ---
-
+```
 ## 🔐 Environment Varibles
 
 Ensure the following environment variables are set in your `.env.local fie:
