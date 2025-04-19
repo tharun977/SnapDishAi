@@ -1,21 +1,27 @@
-import Image from "next/image"
-import Link from "next/link"
-import { getRecipeById, isRecipeSaved } from "@/app/actions"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Clock, Users, ChefHat, ArrowLeft, Share2, Printer } from "lucide-react"
-import { SaveRecipeButton } from "@/components/recipe/save-recipe-button"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import Image from "next/image";
+import Link from "next/link";
+import { getRecipeById, isRecipeSaved } from "@/app/actions";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Clock, Users, ChefHat, ArrowLeft, Share2, Printer } from "lucide-react";
+import { SaveRecipeButton } from "@/components/recipe/save-recipe-button";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function RecipePage({ params }: { params: { id: string } }) {
-  const recipe = await getRecipeById(params.id)
-  const supabase = createServerSupabaseClient()
+  // Fetch the recipe by ID
+  const recipe = await getRecipeById(params.id);
+  
+  // Create Supabase client and get the session
+  const supabase = createServerSupabaseClient();
   const {
     data: { session },
-  } = await supabase.auth.getSession()
-  const saved = session ? await isRecipeSaved(params.id) : false
+  } = await supabase.auth.getSession();
+  
+  // Check if the recipe is saved
+  const saved = session ? await isRecipeSaved(params.id) : false;
 
   if (!recipe) {
+    // Handle the case where the recipe is not found
     return (
       <div className="container mx-auto flex min-h-screen flex-col items-center justify-center px-4 py-16">
         <h1 className="mb-4 text-2xl font-bold text-black dark:text-white">Recipe not found</h1>
@@ -29,21 +35,21 @@ export default async function RecipePage({ params }: { params: { id: string } })
           </Button>
         </Link>
       </div>
-    )
+    );
   }
 
   // Convert JSONB to arrays
   const ingredients = Array.isArray(recipe.ingredients)
     ? recipe.ingredients
     : typeof recipe.ingredients === "object"
-      ? Object.values(recipe.ingredients)
-      : []
+    ? Object.values(recipe.ingredients)
+    : [];
 
   const instructions = Array.isArray(recipe.instructions)
     ? recipe.instructions
     : typeof recipe.instructions === "object"
-      ? Object.values(recipe.instructions)
-      : []
+    ? Object.values(recipe.instructions)
+    : [];
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -145,7 +151,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
                   className="flex items-start border-b border-neutral-200 dark:border-neutral-800 pb-3 last:border-0 last:pb-0"
                 >
                   <span className="mr-3 mt-1.5 block h-1.5 w-1.5 rounded-full bg-purple-500"></span>
-                  <span className="text-neutral-700 dark:text-neutral-300">{ingredient}</span>
+                  <span className="text-neutral-700 dark:text-neutral-300">{ingredient as string}</span>
                 </li>
               ))}
             </ul>
@@ -164,7 +170,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
                   <span className="mr-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30 text-sm font-medium text-purple-600 dark:text-purple-400">
                     {index + 1}
                   </span>
-                  <p className="text-neutral-700 dark:text-neutral-300 pt-1">{step}</p>
+                  <p className="text-neutral-700 dark:text-neutral-300 pt-1">{step as string}</p>
                 </li>
               ))}
             </ol>
@@ -173,20 +179,12 @@ export default async function RecipePage({ params }: { params: { id: string } })
       </div>
 
       {/* CTA Section */}
-      <div className="mt-16 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-gradient-to-b from-purple-100/50 to-white dark:from-purple-900/20 dark:to-black p-8 text-center">
-        <h2 className="mb-4 text-2xl font-bold text-black dark:text-white">Want to identify another dish?</h2>
-        <p className="mb-6 text-neutral-600 dark:text-neutral-400">
-          Upload another food photo and get the recipe instantly.
-        </p>
-        <Link href="/">
-          <Button
-            size="lg"
-            className="rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"
-          >
-            Upload Another Photo
-          </Button>
-        </Link>
+      <div className="mt-16 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-black/50 backdrop-blur-md px-6 py-8 text-center">
+        <h3 className="mb-4 text-2xl font-semibold text-black dark:text-white">Enjoy your meal!</h3>
+        <Button variant="outline" size="lg">
+          Save Recipe
+        </Button>
       </div>
     </div>
-  )
+  );
 }
