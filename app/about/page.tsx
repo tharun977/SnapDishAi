@@ -70,21 +70,23 @@ export default function AboutPage() {
         <div className="mx-auto max-w-3xl">
           <h2 className="mb-6 text-3xl font-bold text-black dark:text-white">Our Team</h2>
           <div className="grid gap-8 md:grid-cols-3">
+            {/* Tharun Raman Card */}
             <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-black/50 p-6 text-center">
               <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
-                  alt="Team Member"
+                  src="/images/tharun.jpeg" // 🔁 Replace with actual image path
+                  alt="Tharun Raman"
                   className="h-full w-full object-cover"
                 />
               </div>
-              <h3 className="mb-1 text-lg font-semibold text-black dark:text-white">Alex Chen</h3>
+              <h3 className="mb-1 text-lg font-semibold text-black dark:text-white">Tharun Raman</h3>
               <p className="text-sm text-neutral-600 dark:text-neutral-400">Founder & CEO</p>
               <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
-                Former chef turned tech entrepreneur with a passion for making cooking accessible to everyone.
+                A cs student with a passion for food and technology.
               </p>
             </div>
 
+            {/* Dummy1 */}
             <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-black/50 p-6 text-center">
               <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                 <img
@@ -93,13 +95,14 @@ export default function AboutPage() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <h3 className="mb-1 text-lg font-semibold text-black dark:text-white">Maya Patel</h3>
+              <h3 className="mb-1 text-lg font-semibold text-black dark:text-white">Dummy1</h3>
               <p className="text-sm text-neutral-600 dark:text-neutral-400">CTO</p>
               <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
                 AI specialist with expertise in computer vision and machine learning for food recognition.
               </p>
             </div>
 
+            {/* Dummy2 */}
             <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-black/50 p-6 text-center">
               <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                 <img
@@ -108,7 +111,7 @@ export default function AboutPage() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <h3 className="mb-1 text-lg font-semibold text-black dark:text-white">James Wilson</h3>
+              <h3 className="mb-1 text-lg font-semibold text-black dark:text-white">Dummy2</h3>
               <p className="text-sm text-neutral-600 dark:text-neutral-400">Head of Culinary</p>
               <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
                 Professional chef with 15 years of experience curating our recipe database.
