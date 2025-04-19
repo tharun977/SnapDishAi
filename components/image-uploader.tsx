@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Loader2, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { identifyDish } from "@/app/actions"  // Ensure this function is correctly implemented in your app/actions.ts
+import { identifyDish } from "@/app/actions"
 import { toast } from "@/components/ui/use-toast"
 
 export function ImageUploader() {
@@ -15,12 +15,13 @@ export function ImageUploader() {
   const [preview, setPreview] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null) // Store the uploaded image URL
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Reset error state
+    // Reset states
     setError(null)
 
     // Check file type
@@ -59,21 +60,22 @@ export function ImageUploader() {
       const formData = new FormData()
       formData.append("image", image)
 
-      const result = await identifyDish(formData) // Call your dish identification function
-      
+      const result: { success: boolean; recipeName?: string; recipeId?: string; imageUrl?: string; error?: string } = await identifyDish(formData)
+
       if (result.success) {
         toast({
           title: "Dish identified!",
           description: `We identified this as ${result.recipeName}`,
         })
+        setUploadedImageUrl(result.imageUrl ?? null) // Set the image URL returned from the server
+
         // Navigate to results page with the recipe ID
         router.push(`/recipe/${result.recipeId}`)
       } else {
-        const errorMessage = "Failed to identify dish"; // Default error message
-        setError(errorMessage)
+        setError(result.error ?? "Failed to identify dish")
         toast({
           title: "Error",
-          description: errorMessage,
+          description: result.error || "Failed to identify dish",
           variant: "destructive",
         })
       }
@@ -100,13 +102,7 @@ export function ImageUploader() {
             } hover:bg-neutral-200 dark:hover:bg-neutral-900 transition-colors`}
             onClick={() => document.getElementById("file-upload")?.click()}
           >
-            <input
-              id="file-upload"
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
+            <input id="file-upload" type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
 
             {preview ? (
               <img
@@ -135,8 +131,18 @@ export function ImageUploader() {
               {image?.name} (
               {(image?.size || 0) / 1024 < 1000
                 ? `${Math.round((image?.size || 0) / 1024)} KB`
-                : `${Math.round(((image?.size || 0) / 1024 / 1024) * 10) / 10} MB`})
+                : `${Math.round(((image?.size || 0) / 1024 / 1024) * 10) / 10} MB`}
+              )
             </p>
+          )}
+
+          {/* Display the uploaded image */}
+          {uploadedImageUrl && (
+            <img
+              src={uploadedImageUrl}
+              alt="Uploaded Dish"
+              className="mt-4 w-full h-auto rounded-lg object-contain"
+            />
           )}
         </div>
 
