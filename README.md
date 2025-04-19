@@ -151,7 +151,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ---
 ```
 
-## 📄 icense
+## 📄 License
 
 This project is licensed under the [MIT License](ICENSE).
 
