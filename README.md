@@ -149,6 +149,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-ky
 5. Open a pull equest.
 
 ---
+```
 
 ## 📄 icense
 
