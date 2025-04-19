@@ -34,7 +34,7 @@
 - **Backend*: Supabase (PostgreSQL, Auth, Storge)
 - **AI & Machine Learning*: Ultralytics YOLO for image recogniion
 - **APIs*: TheMealDB for recipe ata
-- **Deployment*: Vecel
+- **Deployment*: Vercel
 
 ---
 
