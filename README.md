@@ -157,6 +157,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-ky
 
 ---
 
-For more information and updates, visit our [official website](https://snapdish.ai) or follow us on [Twitter](https://twitter.com/snapish_ai).
+For more information and updates, visit our [official website](https://snapdishai.vercel.app) or follow us on [Twitter](https://twitter.com/echotharun).
 
 --- 
