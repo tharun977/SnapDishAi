@@ -1,13 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { identifyDish } from "@/app/actions"
+import { identifyDish } from "@/app/actions"  // Ensure this function is correctly implemented in your app/actions.ts
 import { toast } from "@/components/ui/use-toast"
 
 export function ImageUploader() {
@@ -21,7 +20,7 @@ export function ImageUploader() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Reset states
+    // Reset error state
     setError(null)
 
     // Check file type
@@ -60,8 +59,8 @@ export function ImageUploader() {
       const formData = new FormData()
       formData.append("image", image)
 
-      const result = await identifyDish(formData)
-
+      const result = await identifyDish(formData) // Call your dish identification function
+      
       if (result.success) {
         toast({
           title: "Dish identified!",
@@ -70,10 +69,11 @@ export function ImageUploader() {
         // Navigate to results page with the recipe ID
         router.push(`/recipe/${result.recipeId}`)
       } else {
-        setError(result.error || "Failed to identify dish")
+        const errorMessage = "Failed to identify dish"; // Default error message
+        setError(errorMessage)
         toast({
           title: "Error",
-          description: result.error || "Failed to identify dish",
+          description: errorMessage,
           variant: "destructive",
         })
       }
@@ -100,7 +100,13 @@ export function ImageUploader() {
             } hover:bg-neutral-200 dark:hover:bg-neutral-900 transition-colors`}
             onClick={() => document.getElementById("file-upload")?.click()}
           >
-            <input id="file-upload" type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+            <input
+              id="file-upload"
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
 
             {preview ? (
               <img
@@ -129,8 +135,7 @@ export function ImageUploader() {
               {image?.name} (
               {(image?.size || 0) / 1024 < 1000
                 ? `${Math.round((image?.size || 0) / 1024)} KB`
-                : `${Math.round(((image?.size || 0) / 1024 / 1024) * 10) / 10} MB`}
-              )
+                : `${Math.round(((image?.size || 0) / 1024 / 1024) * 10) / 10} MB`})
             </p>
           )}
         </div>
