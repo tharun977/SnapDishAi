@@ -130,7 +130,7 @@
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-ky
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ``
 
 
@@ -143,9 +143,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-ky
 Contributions are welcome! Please follow thes steps
 
 1. Fork the repsitoy.
-2. Create a new branch: `git checkout -b feature/your-featur-nam`.
+2. Create a new branch: `git checkout -b feature/your-featur-name`.
 3. Commit your changes: `git commit -m 'Add your feture`.
-4. Push to the branch: `git push origin feature/your-featur-nam`.
+4. Push to the branch: `git push origin feature/your-featur-name`.
 5. Open a pull equest.
 
 ---
