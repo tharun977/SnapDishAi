@@ -39,11 +39,11 @@ export default async function RecipePage({ params }: { params: { id: string } })
   }
 
   // Convert JSONB to arrays
-  const ingredients = Array.isArray(recipe.ingredients)
-    ? recipe.ingredients
-    : typeof recipe.ingredients === "object"
-    ? Object.values(recipe.ingredients)
-    : [];
+  const ingredients: string[] = Array.isArray(recipe.ingredients)
+      ? recipe.ingredients
+      : typeof recipe.ingredients === "object"
+      ? Object.values(recipe.ingredients)
+      : [];
 
   const instructions = Array.isArray(recipe.instructions)
     ? recipe.instructions
@@ -129,8 +129,9 @@ export default async function RecipePage({ params }: { params: { id: string } })
         </div>
 
         <div className="relative h-64 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 sm:h-80 md:h-96">
+          {/* Use the uploaded image URL (assuming you have a way to get it dynamically) */}
           <Image
-            src={recipe.image_url || "/placeholder.svg?height=400&width=600"}
+            src={recipe.image_url || "/path/to/uploaded/image.jpg"} // This should be the uploaded image URL
             alt={recipe.name}
             fill
             className="object-cover"
