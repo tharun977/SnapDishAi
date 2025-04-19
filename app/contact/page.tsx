@@ -106,9 +106,9 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium text-black dark:text-white">Office</h3>
                     <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                      123 Innovation Drive
+                      HAHAHA
                       <br />
-                      San Francisco, CA 94107
+                      Will get there soon
                     </p>
                   </div>
                 </div>
