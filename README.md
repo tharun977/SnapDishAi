@@ -90,7 +90,7 @@
 ## 📁 Project Structre
 
 
-```bash
+\`\`\`bash
 ├── components/          # Reusable UI components
 ├── lib/                 # Supabase client and utility functions
 ├── pages/               # Next.js pages
@@ -122,13 +122,13 @@
 Displays information about SnapDish AI, its mission, story, and the team behid it.
 
 ---
-```
+\`\`\`
 ## 🔐 Environment Varibles
 
 Ensure the following environment variables are set in your `.env.local fie:
 
 
-```env
+\`\`\`env
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ``
@@ -149,7 +149,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 5. Open a pull equest.
 
 ---
-```
+\`\`\`
 
 ## 📄 License
 
@@ -159,4 +159,4 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 For more information and updates, visit our [official website](https://snapdishai.vercel.app) or follow us on [Twitter](https://twitter.com/echotharun).
 
---- 
+---

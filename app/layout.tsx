@@ -16,7 +16,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "SnapDish AI - Your Personal Visual Chef",
   description: "Snap a dish, get the recipe. Your personal visual chef powered by AI.",
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default async function RootLayout({

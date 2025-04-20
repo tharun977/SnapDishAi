@@ -1,24 +1,24 @@
-import Image from "next/image";
-import Link from "next/link";
-import { getRecipeById, isRecipeSaved } from "@/app/actions";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Users, ChefHat, ArrowLeft, Share2, Printer } from "lucide-react";
-import { SaveRecipeButton } from "@/components/recipe/save-recipe-button";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import Image from "next/image"
+import Link from "next/link"
+import { getRecipeById, isRecipeSaved } from "@/app/actions"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Clock, Users, ChefHat, ArrowLeft, Share2, Printer } from "lucide-react"
+import { SaveRecipeButton } from "@/components/recipe/save-recipe-button"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 export default async function RecipePage({ params }: { params: { id: string } }) {
   // Fetch the recipe by ID
-  const recipe = await getRecipeById(params.id);
-  
+  const recipe = await getRecipeById(params.id)
+
   // Create Supabase client and get the session
-  const supabase = createServerSupabaseClient();
+  const supabase = createServerSupabaseClient()
   const {
     data: { session },
-  } = await supabase.auth.getSession();
-  
+  } = await supabase.auth.getSession()
+
   // Check if the recipe is saved
-  const saved = session ? await isRecipeSaved(params.id) : false;
+  const saved = session ? await isRecipeSaved(params.id) : false
 
   if (!recipe) {
     // Handle the case where the recipe is not found
@@ -35,21 +35,21 @@ export default async function RecipePage({ params }: { params: { id: string } })
           </Button>
         </Link>
       </div>
-    );
+    )
   }
 
   // Convert JSONB to arrays
   const ingredients: string[] = Array.isArray(recipe.ingredients)
-      ? recipe.ingredients
-      : typeof recipe.ingredients === "object"
+    ? recipe.ingredients
+    : typeof recipe.ingredients === "object"
       ? Object.values(recipe.ingredients)
-      : [];
+      : []
 
   const instructions = Array.isArray(recipe.instructions)
     ? recipe.instructions
     : typeof recipe.instructions === "object"
-    ? Object.values(recipe.instructions)
-    : [];
+      ? Object.values(recipe.instructions)
+      : []
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -187,5 +187,5 @@ export default async function RecipePage({ params }: { params: { id: string } })
         </Button>
       </div>
     </div>
-  );
+  )
 }

@@ -60,7 +60,8 @@ export function ImageUploader() {
       const formData = new FormData()
       formData.append("image", image)
 
-      const result: { success: boolean; recipeName?: string; recipeId?: string; imageUrl?: string; error?: string } = await identifyDish(formData)
+      const result: { success: boolean; recipeName?: string; recipeId?: string; imageUrl?: string; error?: string } =
+        await identifyDish(formData)
 
       if (result.success) {
         toast({
@@ -138,11 +139,7 @@ export function ImageUploader() {
 
           {/* Display the uploaded image */}
           {uploadedImageUrl && (
-            <img
-              src={uploadedImageUrl}
-              alt="Uploaded Dish"
-              className="mt-4 w-full h-auto rounded-lg object-contain"
-            />
+            <img src={uploadedImageUrl} alt="Uploaded Dish" className="mt-4 w-full h-auto rounded-lg object-contain" />
           )}
         </div>
 

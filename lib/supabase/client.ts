@@ -9,7 +9,7 @@ export function createClientSupabaseClient() {
   if (!supabaseClient) {
     supabaseClient = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!, // Ensure this is set in your .env.local
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! // Ensure this is set in your .env.local
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Ensure this is set in your .env.local
     )
   }
   return supabaseClient
