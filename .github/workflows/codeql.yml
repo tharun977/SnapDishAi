@@ -35,7 +35,8 @@ jobs:
           node-version: '18' # or whatever version your project needs
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
+
 
 
       - name: Initialize CodeQL
