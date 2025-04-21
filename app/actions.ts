@@ -1,8 +1,18 @@
-// app/actions.ts
+"use server"
+
+import { type Recipe, searchRecipeByName, getFallbackRecipe } from "@/lib/api/recipe-service"
+
+// Store for recipes (simulating a database in memory for now)
+const recipeStore: Record<string, Recipe> = {}
 
 // Simulating a database fetch function for a recipe by ID
 export async function getRecipeById(id: string) {
-  // Replace this with actual logic to fetch from your database
+  // Check if we have this recipe in our store
+  if (recipeStore[id]) {
+    return recipeStore[id]
+  }
+
+  // For demo purposes, return a default recipe if not found
   return {
     id,
     name: "Spaghetti Bolognese",
@@ -12,7 +22,7 @@ export async function getRecipeById(id: string) {
     cooking_time: "30 minutes",
     servings: 4,
     difficulty: "Medium",
-    image_url: "/path/to/image.jpg", // Sample image path
+    image_url: "/placeholder.svg?height=400&width=600", // Sample image path
   }
 }
 
@@ -22,19 +32,106 @@ export async function isRecipeSaved(id: string) {
   return false // Assuming recipe is not saved (adjust as needed)
 }
 
-// New identifyDish function - simulate identifying a dish based on the image
+// Function to identify a dish from an image
 export async function identifyDish(formData: FormData) {
-  // Here, you'd handle the image and identify the dish (maybe by calling a third-party API)
+  try {
+    const imageFile = formData.get("image") as File
+    if (!imageFile) {
+      return {
+        success: false,
+        error: "No image provided",
+      }
+    }
 
-  // Simulate an image upload (you would upload this to cloud storage in a real app)
-  const uploadedImageUrl = "/path/to/uploaded/image.jpg" // This should be the URL where the image is stored
+    // Convert the image file to a data URL for storage
+    const imageDataUrl = await new Promise<string>((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.readAsDataURL(imageFile)
+    })
 
-  // For now, simulate the process and return a mock response
-  return {
-    success: true,
-    recipeName: "Spaghetti Bolognese", // Example result
-    recipeId: "12345", // Example ID
-    imageUrl: uploadedImageUrl, // Returning the image URL
+    // Simple food recognition based on image filename
+    // In a real app, you'd use a proper image recognition API
+    const fileName = imageFile.name.toLowerCase()
+
+    // List of common food items to check against the filename
+    const foodItems = [
+      "pizza",
+      "pasta",
+      "burger",
+      "salad",
+      "sushi",
+      "steak",
+      "chicken",
+      "fish",
+      "soup",
+      "sandwich",
+      "taco",
+      "burrito",
+      "curry",
+      "rice",
+      "noodle",
+      "cake",
+      "cookie",
+      "pie",
+      "ice cream",
+      "chocolate",
+    ]
+
+    // Try to find a match in the filename
+    let recognizedDish = foodItems.find((food) => fileName.includes(food))
+
+    // If no match in filename, use a default or random food item
+    if (!recognizedDish) {
+      // Extract potential food name from filename by removing extension and special chars
+      const potentialName = fileName
+        .replace(/\.[^/.]+$/, "") // Remove file extension
+        .replace(/[_-]/g, " ") // Replace underscores and hyphens with spaces
+        .trim()
+
+      // If the potential name seems reasonable (not too short, not just "image")
+      if (potentialName.length > 3 && !["image", "img", "photo", "pic"].includes(potentialName)) {
+        recognizedDish = potentialName
+      } else {
+        // Use a random food item as fallback
+        recognizedDish = foodItems[Math.floor(Math.random() * foodItems.length)]
+      }
+    }
+
+    console.log(`Recognized dish: ${recognizedDish}`)
+
+    // Search for a recipe based on the identified dish
+    let recipe = await searchRecipeByName(recognizedDish)
+
+    // If no recipe found, use a fallback
+    if (!recipe) {
+      recipe = getFallbackRecipe(recognizedDish)
+    }
+
+    // Generate a unique ID for this recipe
+    const recipeId = `recipe-${Date.now()}`
+
+    // Store the recipe in our in-memory store with the image URL
+    recipeStore[recipeId] = {
+      ...recipe,
+      id: recipeId,
+      image_url: imageDataUrl, // Use the uploaded image as the recipe image
+    }
+
+    // Return the result
+    return {
+      success: true,
+      recipeName: recognizedDish,
+      recipeId: recipeId,
+      imageUrl: imageDataUrl,
+      confidence: 0.85, // Simulated confidence score
+    }
+  } catch (error) {
+    console.error("Error identifying dish:", error)
+    return {
+      success: false,
+      error: "Failed to process the image. Please try again.",
+    }
   }
 }
 
@@ -67,8 +164,6 @@ export async function saveRecipe(recipeId: string) {
     }
   }
 }
-
-// Add these additional functions that might be used elsewhere
 
 // Function to get user profile
 export async function getUserProfile() {

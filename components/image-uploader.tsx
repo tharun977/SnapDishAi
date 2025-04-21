@@ -15,7 +15,6 @@ export function ImageUploader() {
   const [preview, setPreview] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null) // Store the uploaded image URL
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -56,19 +55,18 @@ export function ImageUploader() {
 
     try {
       setIsUploading(true)
+      setError(null)
 
       const formData = new FormData()
       formData.append("image", image)
 
-      const result: { success: boolean; recipeName?: string; recipeId?: string; imageUrl?: string; error?: string } =
-        await identifyDish(formData)
+      const result = await identifyDish(formData)
 
       if (result.success) {
         toast({
           title: "Dish identified!",
           description: `We identified this as ${result.recipeName}`,
         })
-        setUploadedImageUrl(result.imageUrl ?? null) // Set the image URL returned from the server
 
         // Navigate to results page with the recipe ID
         router.push(`/recipe/${result.recipeId}`)
@@ -81,13 +79,13 @@ export function ImageUploader() {
         })
       }
     } catch (err: any) {
+      console.error("Error in handleSubmit:", err)
       setError("An error occurred. Please try again.")
       toast({
         title: "Error",
         description: err.message || "An error occurred",
         variant: "destructive",
       })
-      console.error(err)
     } finally {
       setIsUploading(false)
     }
@@ -135,11 +133,6 @@ export function ImageUploader() {
                 : `${Math.round(((image?.size || 0) / 1024 / 1024) * 10) / 10} MB`}
               )
             </p>
-          )}
-
-          {/* Display the uploaded image */}
-          {uploadedImageUrl && (
-            <img src={uploadedImageUrl} alt="Uploaded Dish" className="mt-4 w-full h-auto rounded-lg object-contain" />
           )}
         </div>
 

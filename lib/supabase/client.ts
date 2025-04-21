@@ -1,15 +1,19 @@
 import { createBrowserClient } from "@supabase/ssr"
 
-// Declare supabase client variable with proper type
+// Create a singleton instance of the Supabase client
 let supabaseClient: ReturnType<typeof createBrowserClient> | null = null
 
-// Function to initialize Supabase client only once
 export function createClientSupabaseClient() {
-  // Check if client already exists to avoid re-initializing it
+  if (typeof window === "undefined") {
+    // Server-side: create a new client each time
+    return createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+  }
+
+  // Client-side: reuse the same client
   if (!supabaseClient) {
     supabaseClient = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!, // Ensure this is set in your .env.local
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Ensure this is set in your .env.local
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     )
   }
   return supabaseClient

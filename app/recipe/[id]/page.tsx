@@ -38,18 +38,21 @@ export default async function RecipePage({ params }: { params: { id: string } })
     )
   }
 
-  // Convert JSONB to arrays
-  const ingredients: string[] = Array.isArray(recipe.ingredients)
+  // Ensure ingredients and instructions are arrays
+  const ingredients = Array.isArray(recipe.ingredients)
     ? recipe.ingredients
-    : typeof recipe.ingredients === "object"
+    : typeof recipe.ingredients === "object" && recipe.ingredients !== null
       ? Object.values(recipe.ingredients)
       : []
 
   const instructions = Array.isArray(recipe.instructions)
     ? recipe.instructions
-    : typeof recipe.instructions === "object"
+    : typeof recipe.instructions === "object" && recipe.instructions !== null
       ? Object.values(recipe.instructions)
       : []
+
+  // Check if the image_url is a data URL (from uploaded image)
+  const isDataUrl = recipe.image_url?.startsWith("data:")
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -82,7 +85,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
               </div>
               <div>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400">Cooking Time</p>
-                <p className="text-sm font-medium text-black dark:text-white">{recipe.cooking_time}</p>
+                <p className="text-sm font-medium text-black dark:text-white">{recipe.cooking_time || "30 minutes"}</p>
               </div>
             </div>
 
@@ -92,7 +95,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
               </div>
               <div>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400">Servings</p>
-                <p className="text-sm font-medium text-black dark:text-white">{recipe.servings} servings</p>
+                <p className="text-sm font-medium text-black dark:text-white">{recipe.servings || 4} servings</p>
               </div>
             </div>
 
@@ -102,7 +105,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
               </div>
               <div>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400">Difficulty</p>
-                <p className="text-sm font-medium text-black dark:text-white">{recipe.difficulty}</p>
+                <p className="text-sm font-medium text-black dark:text-white">{recipe.difficulty || "Medium"}</p>
               </div>
             </div>
           </div>
@@ -129,14 +132,24 @@ export default async function RecipePage({ params }: { params: { id: string } })
         </div>
 
         <div className="relative h-64 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 sm:h-80 md:h-96">
-          {/* Use the uploaded image URL (assuming you have a way to get it dynamically) */}
-          <Image
-            src={recipe.image_url || "/path/to/uploaded/image.jpg"} // This should be the uploaded image URL
-            alt={recipe.name}
-            fill
-            className="object-cover"
-            priority
-          />
+          {isDataUrl ? (
+            // For data URLs (uploaded images), use img tag instead of Image component
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={recipe.image_url || "/placeholder.svg"}
+              alt={recipe.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            // For regular URLs, use Next.js Image component
+            <Image
+              src={recipe.image_url || "/placeholder.svg?height=400&width=600"}
+              alt={recipe.name}
+              fill
+              className="object-cover"
+              priority
+            />
+          )}
         </div>
       </div>
 
@@ -182,9 +195,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
       {/* CTA Section */}
       <div className="mt-16 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-black/50 backdrop-blur-md px-6 py-8 text-center">
         <h3 className="mb-4 text-2xl font-semibold text-black dark:text-white">Enjoy your meal!</h3>
-        <Button variant="outline" size="lg">
-          Save Recipe
-        </Button>
+        <SaveRecipeButton recipeId={recipe.id} initialSaved={saved} />
       </div>
     </div>
   )
