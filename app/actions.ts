@@ -1,35 +1,72 @@
 "use server"
 
+import { recognizeFood } from "@/lib/ai/food-recognition"
 import { type Recipe, searchRecipeByName, getFallbackRecipe } from "@/lib/api/recipe-service"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { v4 as uuidv4 } from "uuid"
 
-// Store for recipes (simulating a database in memory for now)
+// Store for recipes (simulating a database in memory)
 const recipeStore: Record<string, Recipe> = {}
 
 // Simulating a database fetch function for a recipe by ID
 export async function getRecipeById(id: string) {
-  // Check if we have this recipe in our store
-  if (recipeStore[id]) {
-    return recipeStore[id]
-  }
+  try {
+    // First check if we have this recipe in our store
+    if (recipeStore[id]) {
+      return recipeStore[id]
+    }
 
-  // For demo purposes, return a default recipe if not found
-  return {
-    id,
-    name: "Spaghetti Bolognese",
-    description: "A classic Italian pasta dish.",
-    ingredients: ["spaghetti", "beef", "tomato sauce"],
-    instructions: ["Boil water", "Cook spaghetti", "Prepare sauce"],
-    cooking_time: "30 minutes",
-    servings: 4,
-    difficulty: "Medium",
-    image_url: "/placeholder.svg?height=400&width=600", // Sample image path
+    // If not in memory, return a default recipe
+    return {
+      id,
+      name: "Spaghetti Bolognese",
+      description: "A classic Italian pasta dish.",
+      ingredients: ["spaghetti", "beef", "tomato sauce"],
+      instructions: ["Boil water", "Cook spaghetti", "Prepare sauce"],
+      cooking_time: "30 minutes",
+      servings: 4,
+      difficulty: "Medium",
+      image_url: "/placeholder.svg?height=400&width=600", // Sample image path
+    }
+  } catch (error) {
+    console.error("Error in getRecipeById:", error)
+    // Return a default recipe if error
+    return {
+      id,
+      name: "Spaghetti Bolognese",
+      description: "A classic Italian pasta dish.",
+      ingredients: ["spaghetti", "beef", "tomato sauce"],
+      instructions: ["Boil water", "Cook spaghetti", "Prepare sauce"],
+      cooking_time: "30 minutes",
+      servings: 4,
+      difficulty: "Medium",
+      image_url: "/placeholder.svg?height=400&width=600", // Sample image path
+    }
   }
 }
 
-// Simulating checking if the recipe is saved by the user (authentication not implemented here)
+// Checking if the recipe is saved by the user (in-memory implementation)
+const savedRecipes: Record<string, Set<string>> = {} // userId -> Set of recipeIds
+
 export async function isRecipeSaved(id: string) {
-  // Logic to check if the recipe is saved (this would usually involve a database or user session check)
-  return false // Assuming recipe is not saved (adjust as needed)
+  try {
+    const supabase = await createServerSupabaseClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
+      return false
+    }
+
+    const userId = session.user.id
+
+    // Check if the recipe is saved in our in-memory store
+    return savedRecipes[userId]?.has(id) || false
+  } catch (error) {
+    console.error("Error checking if recipe is saved:", error)
+    return false
+  }
 }
 
 // Function to identify a dish from an image
@@ -43,88 +80,56 @@ export async function identifyDish(formData: FormData) {
       }
     }
 
-    // Convert the image file to a data URL for storage
-    const imageDataUrl = await new Promise<string>((resolve) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.readAsDataURL(imageFile)
-    })
+    // Convert the image file to a buffer for server-side processing
+    const bytes = await imageFile.arrayBuffer()
+    const buffer = Buffer.from(bytes)
 
-    // Simple food recognition based on image filename
-    // In a real app, you'd use a proper image recognition API
-    const fileName = imageFile.name.toLowerCase()
+    // Convert buffer to base64 for processing
+    const base64Image = `data:${imageFile.type};base64,${buffer.toString("base64")}`
 
-    // List of common food items to check against the filename
-    const foodItems = [
-      "pizza",
-      "pasta",
-      "burger",
-      "salad",
-      "sushi",
-      "steak",
-      "chicken",
-      "fish",
-      "soup",
-      "sandwich",
-      "taco",
-      "burrito",
-      "curry",
-      "rice",
-      "noodle",
-      "cake",
-      "cookie",
-      "pie",
-      "ice cream",
-      "chocolate",
-    ]
+    // Use our food recognition service
+    const recognitionResult = await recognizeFood(base64Image)
 
-    // Try to find a match in the filename
-    let recognizedDish = foodItems.find((food) => fileName.includes(food))
-
-    // If no match in filename, use a default or random food item
-    if (!recognizedDish) {
-      // Extract potential food name from filename by removing extension and special chars
-      const potentialName = fileName
-        .replace(/\.[^/.]+$/, "") // Remove file extension
-        .replace(/[_-]/g, " ") // Replace underscores and hyphens with spaces
-        .trim()
-
-      // If the potential name seems reasonable (not too short, not just "image")
-      if (potentialName.length > 3 && !["image", "img", "photo", "pic"].includes(potentialName)) {
-        recognizedDish = potentialName
-      } else {
-        // Use a random food item as fallback
-        recognizedDish = foodItems[Math.floor(Math.random() * foodItems.length)]
+    if (!recognitionResult.success) {
+      return {
+        success: false,
+        error: recognitionResult.error || "Failed to identify the dish",
       }
     }
 
-    console.log(`Recognized dish: ${recognizedDish}`)
+    const dishName = recognitionResult.dish!
+    const confidence = recognitionResult.confidence!
+
+    console.log(`Recognized dish: ${dishName} with confidence: ${confidence}`)
 
     // Search for a recipe based on the identified dish
-    let recipe = await searchRecipeByName(recognizedDish)
+    let recipe = await searchRecipeByName(dishName)
 
     // If no recipe found, use a fallback
     if (!recipe) {
-      recipe = getFallbackRecipe(recognizedDish)
+      recipe = getFallbackRecipe(dishName)
     }
 
-    // Generate a unique ID for this recipe
-    const recipeId = `recipe-${Date.now()}`
+    // Generate a UUID for this recipe
+    const recipeId = uuidv4()
+
+    // We'll use the base64 image directly
+    const imageUrl = base64Image
 
     // Store the recipe in our in-memory store with the image URL
     recipeStore[recipeId] = {
       ...recipe,
       id: recipeId,
-      image_url: imageDataUrl, // Use the uploaded image as the recipe image
+      image_url: imageUrl,
     }
 
     // Return the result
     return {
       success: true,
-      recipeName: recognizedDish,
+      recipeName: dishName,
       recipeId: recipeId,
-      imageUrl: imageDataUrl,
-      confidence: 0.85, // Simulated confidence score
+      imageUrl: imageUrl,
+      confidence: confidence,
     }
   } catch (error) {
     console.error("Error identifying dish:", error)
@@ -135,25 +140,49 @@ export async function identifyDish(formData: FormData) {
   }
 }
 
-// Function to save or unsave a recipe
+// Function to save or unsave a recipe (in-memory implementation)
 export async function saveRecipe(recipeId: string) {
-  // In a real app, this would interact with the database
-  // For now, we'll simulate the behavior
-
   try {
-    // Simulate a server delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    // Get the current user
+    const supabase = await createServerSupabaseClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
+      return {
+        success: false,
+        error: "You must be logged in to save recipes",
+        saved: false,
+      }
+    }
+
+    const userId = session.user.id
+
+    // Initialize the set if it doesn't exist
+    if (!savedRecipes[userId]) {
+      savedRecipes[userId] = new Set()
+    }
 
     // Check if the recipe is already saved
-    const isSaved = await isRecipeSaved(recipeId)
+    const isSaved = savedRecipes[userId].has(recipeId)
 
-    // Toggle the saved state (in a real app, this would update the database)
-    // Here we're just returning the opposite of the current state
-
-    return {
-      success: true,
-      saved: !isSaved,
-      error: null,
+    if (isSaved) {
+      // Unsave the recipe
+      savedRecipes[userId].delete(recipeId)
+      return {
+        success: true,
+        saved: false,
+        error: null,
+      }
+    } else {
+      // Save the recipe
+      savedRecipes[userId].add(recipeId)
+      return {
+        success: true,
+        saved: true,
+        error: null,
+      }
     }
   } catch (error) {
     console.error("Error saving recipe:", error)
@@ -167,49 +196,83 @@ export async function saveRecipe(recipeId: string) {
 
 // Function to get user profile
 export async function getUserProfile() {
-  // Simulate fetching user profile from database
-  return {
-    id: "user123",
-    username: "foodlover",
-    full_name: "Food Lover",
-    avatar_url: "/placeholder.svg?height=100&width=100",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+  try {
+    const supabase = await createServerSupabaseClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
+      return null
+    }
+
+    // Return a mock profile
+    return {
+      id: session.user.id,
+      username: session.user.email?.split("@")[0] || "user",
+      full_name: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
+      avatar_url: session.user.user_metadata?.avatar_url || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+  } catch (error) {
+    console.error("Error in getUserProfile:", error)
+    return null
   }
 }
 
-// Function to get user saved recipes
+// Function to get user saved recipes (in-memory implementation)
 export async function getUserSavedRecipes() {
-  // Simulate fetching saved recipes from database
-  return [
-    {
-      id: "recipe1",
-      name: "Spaghetti Bolognese",
-      description: "A classic Italian pasta dish.",
-      image_url: "/placeholder.svg?height=200&width=300",
-      ingredients: ["spaghetti", "beef", "tomato sauce"],
-      instructions: ["Boil water", "Cook spaghetti", "Prepare sauce"],
-      cooking_time: "30 minutes",
-      servings: 4,
-      difficulty: "Medium",
-      cuisine: "Italian",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ]
+  try {
+    const supabase = await createServerSupabaseClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
+      return []
+    }
+
+    const userId = session.user.id
+
+    // Get the saved recipe IDs for this user
+    const userSavedRecipes = savedRecipes[userId] || new Set()
+
+    // Return the recipes from our in-memory store
+    return Array.from(userSavedRecipes)
+      .map((id) => recipeStore[id])
+      .filter((recipe) => recipe) // Filter out any undefined recipes
+  } catch (error) {
+    console.error("Error in getUserSavedRecipes:", error)
+    return []
+  }
 }
 
-// Function to update user profile
+// Function to update user profile (mock implementation)
 export async function updateUserProfile(formData: FormData) {
-  // Simulate updating user profile in database
-  const fullName = formData.get("fullName")
-  const username = formData.get("username")
+  try {
+    const supabase = await createServerSupabaseClient()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-  // Simulate a server delay
-  await new Promise((resolve) => setTimeout(resolve, 500))
+    if (!session) {
+      return {
+        success: false,
+        error: "You must be logged in to update your profile",
+      }
+    }
 
-  return {
-    success: true,
-    error: null,
+    // Just return success since we're not actually updating anything
+    return {
+      success: true,
+      error: null,
+    }
+  } catch (error) {
+    console.error("Error in updateUserProfile:", error)
+    return {
+      success: false,
+      error: "An unexpected error occurred",
+    }
   }
 }

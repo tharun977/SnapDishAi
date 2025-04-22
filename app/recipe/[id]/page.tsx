@@ -12,7 +12,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
   const recipe = await getRecipeById(params.id)
 
   // Create Supabase client and get the session
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -51,7 +51,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
       ? Object.values(recipe.instructions)
       : []
 
-  // Check if the image_url is a data URL (from uploaded image)
+  // Check if the image_url is a data URL
   const isDataUrl = recipe.image_url?.startsWith("data:")
 
   return (
@@ -133,10 +133,10 @@ export default async function RecipePage({ params }: { params: { id: string } })
 
         <div className="relative h-64 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 sm:h-80 md:h-96">
           {isDataUrl ? (
-            // For data URLs (uploaded images), use img tag instead of Image component
+            // For data URLs, use img tag
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={recipe.image_url || "/placeholder.svg"}
+              src={recipe.image_url || "/placeholder.svg?height=400&width=600"}
               alt={recipe.name}
               className="h-full w-full object-cover"
             />

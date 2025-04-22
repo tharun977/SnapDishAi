@@ -6,7 +6,7 @@ import { ProfileForm } from "@/components/profile/profile-form"
 import { SavedRecipes } from "@/components/profile/saved-recipes"
 
 export default async function ProfilePage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const {
     data: { session },
   } = await supabase.auth.getSession()

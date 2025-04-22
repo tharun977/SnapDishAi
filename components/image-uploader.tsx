@@ -63,9 +63,11 @@ export function ImageUploader() {
       const result = await identifyDish(formData)
 
       if (result.success) {
+        const confidencePercent = Math.round((result.confidence || 0) * 100)
+
         toast({
           title: "Dish identified!",
-          description: `We identified this as ${result.recipeName}`,
+          description: `We identified this as ${result.recipeName} with ${confidencePercent}% confidence`,
         })
 
         // Navigate to results page with the recipe ID

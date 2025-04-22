@@ -14,6 +14,7 @@ export interface Recipe {
   cuisine?: string
 }
 
+// Function to search for recipes by name using TheMealDB API
 export async function searchRecipeByName(dishName: string): Promise<Recipe | null> {
   try {
     console.log(`Searching for recipe: ${dishName}`)
@@ -69,9 +70,9 @@ export async function searchRecipeByName(dishName: string): Promise<Recipe | nul
       image_url: meal.strMealThumb,
       ingredients,
       instructions,
-      cooking_time: "30-45 minutes", // TheMealDB doesn't provide cooking time
-      servings: 4, // TheMealDB doesn't provide servings
-      difficulty: "Medium", // TheMealDB doesn't provide difficulty
+      cooking_time: estimateCookingTime(instructions, ingredients),
+      servings: estimateServings(ingredients),
+      difficulty: estimateDifficulty(instructions, ingredients),
       cuisine: meal.strArea,
     }
 
@@ -79,6 +80,137 @@ export async function searchRecipeByName(dishName: string): Promise<Recipe | nul
   } catch (error) {
     console.error("Error fetching recipe:", error)
     return null
+  }
+}
+
+// Helper function to estimate cooking time based on instructions and ingredients
+function estimateCookingTime(instructions: string[], ingredients: string[]): string {
+  // Count the number of steps and ingredients to estimate complexity
+  const stepCount = instructions.length
+  const ingredientCount = ingredients.length
+
+  // Simple algorithm to estimate cooking time
+  let baseTime = 15 // Base time in minutes
+
+  // Add time based on number of steps
+  baseTime += stepCount * 3
+
+  // Add time based on number of ingredients
+  baseTime += ingredientCount
+
+  // Check for specific time-consuming cooking methods in instructions
+  const timeConsumingMethods = ["simmer", "bake", "roast", "slow cook", "marinate", "chill", "refrigerate", "freeze"]
+  for (const step of instructions) {
+    for (const method of timeConsumingMethods) {
+      if (step.toLowerCase().includes(method)) {
+        // Add extra time for time-consuming methods
+        if (method === "simmer" || method === "bake" || method === "roast") {
+          baseTime += 30
+        } else if (method === "slow cook") {
+          baseTime += 120
+        } else if (method === "marinate" || method === "chill" || method === "refrigerate" || method === "freeze") {
+          baseTime += 60
+        }
+      }
+    }
+  }
+
+  // Format the time
+  if (baseTime < 30) {
+    return `${baseTime} minutes`
+  } else if (baseTime < 60) {
+    return `${baseTime} minutes`
+  } else {
+    const hours = Math.floor(baseTime / 60)
+    const minutes = baseTime % 60
+    if (minutes === 0) {
+      return `${hours} hour${hours > 1 ? "s" : ""}`
+    } else {
+      return `${hours} hour${hours > 1 ? "s" : ""} ${minutes} minutes`
+    }
+  }
+}
+
+// Helper function to estimate servings based on ingredients
+function estimateServings(ingredients: string[]): number {
+  // Look for explicit serving information in ingredients
+  for (const ingredient of ingredients) {
+    const lowerIngredient = ingredient.toLowerCase()
+    if (lowerIngredient.includes("serv")) {
+      const match = lowerIngredient.match(/\d+/)
+      if (match) {
+        return Number.parseInt(match[0], 10)
+      }
+    }
+  }
+
+  // Default estimate based on ingredient count
+  const ingredientCount = ingredients.length
+  if (ingredientCount <= 5) {
+    return 2
+  } else if (ingredientCount <= 10) {
+    return 4
+  } else {
+    return 6
+  }
+}
+
+// Helper function to estimate difficulty based on instructions and ingredients
+function estimateDifficulty(instructions: string[], ingredients: string[]): string {
+  // Count the number of steps and ingredients to estimate complexity
+  const stepCount = instructions.length
+  const ingredientCount = ingredients.length
+
+  // Calculate a difficulty score
+  let difficultyScore = 0
+
+  // Add score based on number of steps
+  if (stepCount <= 5) {
+    difficultyScore += 1
+  } else if (stepCount <= 10) {
+    difficultyScore += 2
+  } else {
+    difficultyScore += 3
+  }
+
+  // Add score based on number of ingredients
+  if (ingredientCount <= 5) {
+    difficultyScore += 1
+  } else if (ingredientCount <= 10) {
+    difficultyScore += 2
+  } else {
+    difficultyScore += 3
+  }
+
+  // Check for complex cooking techniques in instructions
+  const complexTechniques = [
+    "knead",
+    "fold",
+    "whip",
+    "temper",
+    "caramelize",
+    "reduce",
+    "deglaze",
+    "blanch",
+    "braise",
+    "sous vide",
+  ]
+  for (const step of instructions) {
+    for (const technique of complexTechniques) {
+      if (step.toLowerCase().includes(technique)) {
+        difficultyScore += 1
+        break
+      }
+    }
+  }
+
+  // Determine difficulty level
+  if (difficultyScore <= 3) {
+    return "Easy"
+  } else if (difficultyScore <= 6) {
+    return "Medium"
+  } else {
+    return "Hard"
   }
 }
 

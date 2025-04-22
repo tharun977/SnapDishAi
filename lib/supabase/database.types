@@ -5,36 +5,36 @@ export interface Database {
     Tables: {
       dish_identifications: {
         Row: {
-          id: string
-          user_id: string | null
+          id: string // UUID
+          user_id: string | null // UUID
           image_url: string | null
           identified_dish: string | null
-          recipe_id: string | null
+          recipe_id: string | null // UUID
           confidence_score: number | null
           created_at: string
         }
         Insert: {
-          id?: string
-          user_id?: string | null
+          id?: string // UUID
+          user_id?: string | null // UUID
           image_url?: string | null
           identified_dish?: string | null
-          recipe_id?: string | null
+          recipe_id?: string | null // UUID
           confidence_score?: number | null
           created_at?: string
         }
         Update: {
-          id?: string
-          user_id?: string | null
+          id?: string // UUID
+          user_id?: string | null // UUID
           image_url?: string | null
           identified_dish?: string | null
-          recipe_id?: string | null
+          recipe_id?: string | null // UUID
           confidence_score?: number | null
           created_at?: string
         }
       }
       profiles: {
         Row: {
-          id: string
+          id: string // UUID
           username: string | null
           full_name: string | null
           avatar_url: string | null
@@ -42,7 +42,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id: string
+          id: string // UUID
           username?: string | null
           full_name?: string | null
           avatar_url?: string | null
@@ -50,7 +50,7 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          id?: string
+          id?: string // UUID
           username?: string | null
           full_name?: string | null
           avatar_url?: string | null
@@ -60,7 +60,7 @@ export interface Database {
       }
       recipes: {
         Row: {
-          id: string
+          id: string // UUID
           name: string
           description: string | null
           image_url: string | null
@@ -74,7 +74,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id?: string
+          id?: string // UUID
           name: string
           description?: string | null
           image_url?: string | null
@@ -88,7 +88,7 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          id?: string
+          id?: string // UUID
           name?: string
           description?: string | null
           image_url?: string | null
@@ -104,21 +104,21 @@ export interface Database {
       }
       user_recipes: {
         Row: {
-          id: string
-          user_id: string
-          recipe_id: string
+          id: string // UUID
+          user_id: string // UUID
+          recipe_id: string // UUID
           created_at: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          recipe_id: string
+          id?: string // UUID
+          user_id: string // UUID
+          recipe_id: string // UUID
           created_at?: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          recipe_id?: string
+          id?: string // UUID
+          user_id?: string // UUID
+          recipe_id?: string // UUID
           created_at?: string
         }
       }
