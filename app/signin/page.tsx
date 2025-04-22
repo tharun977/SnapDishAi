@@ -248,7 +248,10 @@ export default function SignInPage() {
           <button
             type="button"
             className="text-purple-600 dark:text-purple-400 hover:underline"
-            onClick={() => document.querySelector('[data-value="signup"]')?.click()}
+            onClick={() => {
+              const signupTab = document.querySelector('[data-value="signup"]') as HTMLElement | null;
+              signupTab?.click();
+            }}
           >
             Sign up
           </button>
