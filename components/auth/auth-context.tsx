@@ -44,10 +44,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    }: { data: { subscription: { unsubscribe: () => void } } } = supabase.auth.onAuthStateChange(
+      (_event: string, session: Session | null) => {
       setSession(session)
       setUser(session?.user || null)
-    })
+      }
+    )
 
     return () => {
       subscription.unsubscribe()
