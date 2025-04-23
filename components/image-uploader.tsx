@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { identifyDish } from "@/app/actions"
 import { toast } from "@/components/ui/use-toast"
+import { resizeImage, isValidImage } from "@/lib/utils/image-processing"
 
 export function ImageUploader() {
   const router = useRouter()
@@ -16,33 +17,45 @@ export function ImageUploader() {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
     // Reset states
     setError(null)
 
-    // Check file type
-    if (!file.type.startsWith("image/")) {
-      setError("Please upload an image file")
+    // Validate image
+    if (!isValidImage(file)) {
+      setError("Please upload a valid image file (JPEG, PNG, GIF, WEBP) under 10MB")
       return
     }
 
-    // Check file size (limit to 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError("Image size should be less than 10MB")
-      return
-    }
+    try {
+      // Create preview for original file first (as a fallback)
+      const reader = new FileReader()
+      reader.onload = () => {
+        setPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
 
-    setImage(file)
+      // Try to resize the image
+      try {
+        const resizedImage = await resizeImage(file, 800)
+        setPreview(resizedImage)
 
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = () => {
-      setPreview(reader.result as string)
+        // Convert data URL back to File object for form submission
+        const blob = await fetch(resizedImage).then((r) => r.blob())
+        const resizedFile = new File([blob], file.name, { type: file.type })
+        setImage(resizedFile)
+      } catch (resizeErr) {
+        console.error("Error resizing image:", resizeErr)
+        // Fall back to original file
+        setImage(file)
+      }
+    } catch (err: any) {
+      console.error("Error handling image:", err)
+      setError("Error processing image. Please try another image.")
     }
-    reader.readAsDataURL(file)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,6 +72,11 @@ export function ImageUploader() {
 
       const formData = new FormData()
       formData.append("image", image)
+
+      toast({
+        title: "Processing image",
+        description: "Please wait while we analyze your food image...",
+      })
 
       const result = await identifyDish(formData)
 
@@ -106,6 +124,7 @@ export function ImageUploader() {
             <input id="file-upload" type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
 
             {preview ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={preview || "/placeholder.svg"}
                 alt="Food preview"

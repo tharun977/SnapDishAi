@@ -1,15 +1,12 @@
 import { getUserProfile, getUserSavedRecipes } from "@/app/actions"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { getSessionSafely } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProfileForm } from "@/components/profile/profile-form"
 import { SavedRecipes } from "@/components/profile/saved-recipes"
 
 export default async function ProfilePage() {
-  const supabase = await createServerSupabaseClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const { session } = await getSessionSafely()
 
   if (!session) {
     redirect("/signin")

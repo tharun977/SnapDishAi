@@ -10,6 +10,7 @@ type AuthContextType = {
   user: User | null
   session: Session | null
   isLoading: boolean
+  isError: boolean
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
@@ -22,19 +23,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
   const supabase = createClientSupabaseClient()
 
   useEffect(() => {
     const getSession = async () => {
       setIsLoading(true)
+      setIsError(false)
       try {
         const {
           data: { session },
+          error,
         } = await supabase.auth.getSession()
+
+        if (error) {
+          console.error("Error getting session:", error)
+          setIsError(true)
+          setSession(null)
+          setUser(null)
+          return
+        }
+
         setSession(session)
         setUser(session?.user || null)
       } catch (error) {
         console.error("Error getting session:", error)
+        setIsError(true)
+        setSession(null)
+        setUser(null)
       } finally {
         setIsLoading(false)
       }
@@ -44,12 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    }: { data: { subscription: { unsubscribe: () => void } } } = supabase.auth.onAuthStateChange(
-      (_event: string, session: Session | null) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user || null)
-      }
-    )
+      setIsError(false)
+    })
 
     return () => {
       subscription.unsubscribe()
@@ -84,20 +99,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
   }
 
   const signInWithGithub = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+    } catch (error) {
+      console.error("Error signing in with GitHub:", error)
+    }
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, signIn, signUp, signOut, signInWithGithub }}>
+    <AuthContext.Provider value={{ user, session, isLoading, isError, signIn, signUp, signOut, signInWithGithub }}>
       {children}
     </AuthContext.Provider>
   )

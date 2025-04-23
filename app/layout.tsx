@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { AuthProvider } from "@/components/auth/auth-context"
 import { UserNav } from "@/components/auth/user-nav"
 import { Toaster } from "@/components/ui/toaster"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { getSessionSafely } from "@/lib/supabase/server"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,13 +24,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  // Create the Supabase client and await it
-  const supabase = await createServerSupabaseClient()
-
-  // Get the session and await it
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  // Get the session safely
+  const { session } = await getSessionSafely()
 
   return (
     <html lang="en" suppressHydrationWarning>
