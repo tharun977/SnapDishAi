@@ -1,21 +1,23 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import type { Database } from "./database.types";
 
-export const createServerSupabaseClient = async () => {
-  const cookieStore = await cookies(); // ✅ await it!
+// Create the Supabase client (used inside server components only)
+export const createClient = () => {
+  return createServerComponentClient<Database>({
+    cookies,
+  });
+};
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// This is safe to call in server components to get the session
+export const getSessionSafely = async () => {
+  const supabase = createClient();
+  const result = await supabase.auth.getSession();
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Your project's URL and Key are required to create a Supabase client!")
+  if (!result || !result.data || !result.data.session) {
+    console.warn("⚠️ No session found");
+    return null; // Or throw error / redirect logic if needed
   }
 
-  return createServerClient(supabaseUrl, supabaseKey, {
-    cookies: cookieStore,
-    auth: {
-      detectSessionInUrl: true,
-      flowType: "pkce",
-    },
-  })
-}
+  return result.data.session;
+};
