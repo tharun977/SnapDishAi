@@ -25,7 +25,8 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   // Get the session safely
-  const { session } = await getSessionSafely()
+  const sessionData = await getSessionSafely()
+  const session = sessionData?.session || null
 
   return (
     <html lang="en" suppressHydrationWarning>

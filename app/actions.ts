@@ -2,6 +2,7 @@
 
 import { recognizeFood } from "@/lib/ai/tensorflow-recognition"
 import { detectFoodItems } from "@/lib/ai/yolo-detection"
+import { recognizeFoodWithGemini } from "@/lib/ai/gemini-vision"
 import { searchRecipeByName, getFallbackRecipe } from "@/lib/api/recipe-service"
 import type { Recipe } from "@/lib/api/recipe-service"
 import { getSessionSafely } from "@/lib/supabase/server"
@@ -52,7 +53,8 @@ const savedRecipes: Record<string, Set<string>> = {} // userId -> Set of recipeI
 
 export async function isRecipeSaved(id: string) {
   try {
-    const { user } = await getSessionSafely()
+    const sessionData = await getSessionSafely()
+    const user = sessionData?.user
 
     if (!user) {
       return false
@@ -91,28 +93,49 @@ export async function identifyDish(formData: FormData) {
     // Initialize foodItems array with a default value
     let foodItems: string[] = ["dish"]
     let confidence = 0.7 // Default confidence
+    let description: string | undefined = undefined
 
-    // Try with TensorFlow.js MobileNet first
+    // First try with Gemini (most accurate)
     try {
-      const recognitionResult = await recognizeFood(base64Image)
-      console.log("Recognition result:", recognitionResult)
+      console.log("Trying Gemini Vision API")
+      const geminiResult = await recognizeFoodWithGemini(base64Image)
 
-      // If MobileNet succeeds, use its result
-      if (recognitionResult.success && recognitionResult.dish) {
-        foodItems = [recognitionResult.dish]
-        confidence = recognitionResult.confidence || 0.7
+      if (geminiResult.success && geminiResult.dish) {
+        foodItems = [geminiResult.dish]
+        confidence = geminiResult.confidence || 0.9
+        description = geminiResult.description
+        console.log("Gemini successfully identified:", foodItems[0])
+      } else if (geminiResult.error) {
+        console.warn("Gemini API error:", geminiResult.error)
       }
-    } catch (mobileNetError) {
-      console.error("MobileNet recognition failed:", mobileNetError)
+    } catch (geminiError) {
+      console.error("Gemini recognition failed:", geminiError)
     }
 
-    // If MobileNet didn't provide results, try with YOLO
+    // If Gemini didn't work, try with TensorFlow.js MobileNet
+    if (foodItems[0] === "dish") {
+      try {
+        console.log("Trying TensorFlow.js MobileNet")
+        const recognitionResult = await recognizeFood(base64Image)
+
+        if (recognitionResult.success && recognitionResult.dish) {
+          foodItems = [recognitionResult.dish]
+          confidence = recognitionResult.confidence || 0.7
+          console.log("MobileNet successfully identified:", foodItems[0])
+        }
+      } catch (mobileNetError) {
+        console.error("MobileNet recognition failed:", mobileNetError)
+      }
+    }
+
+    // If both Gemini and MobileNet didn't work, try with YOLO
     if (foodItems[0] === "dish") {
       try {
         console.log("Trying YOLO detection")
         const detectedItems = await detectFoodItems(base64Image)
         if (detectedItems && detectedItems.length > 0) {
           foodItems = detectedItems
+          console.log("YOLO successfully identified:", foodItems[0])
         }
       } catch (yoloError) {
         console.error("YOLO detection failed:", yoloError)
@@ -133,6 +156,11 @@ export async function identifyDish(formData: FormData) {
     if (!recipe) {
       console.log("Using fallback recipe generation")
       recipe = getFallbackRecipe(foodItems[0])
+    }
+
+    // If we have a description from Gemini, add it to the recipe
+    if (description && recipe) {
+      recipe.description = description
     }
 
     // Generate a UUID for this recipe
@@ -166,7 +194,8 @@ export async function identifyDish(formData: FormData) {
 export async function saveRecipe(recipeId: string) {
   try {
     // Get the current user
-    const { user } = await getSessionSafely()
+    const sessionData = await getSessionSafely()
+    const user = sessionData?.user
 
     if (!user) {
       return {
@@ -216,7 +245,8 @@ export async function saveRecipe(recipeId: string) {
 // Function to get user profile
 export async function getUserProfile() {
   try {
-    const { user } = await getSessionSafely()
+    const sessionData = await getSessionSafely()
+    const user = sessionData?.user
 
     if (!user) {
       return null
@@ -240,7 +270,8 @@ export async function getUserProfile() {
 // Function to get user saved recipes (in-memory implementation)
 export async function getUserSavedRecipes() {
   try {
-    const { user } = await getSessionSafely()
+    const sessionData = await getSessionSafely()
+    const user = sessionData?.user
 
     if (!user) {
       return []
@@ -264,7 +295,8 @@ export async function getUserSavedRecipes() {
 // Function to update user profile (mock implementation)
 export async function updateUserProfile(formData: FormData) {
   try {
-    const { user } = await getSessionSafely()
+    const sessionData = await getSessionSafely()
+    const user = sessionData?.user
 
     if (!user) {
       return {

@@ -12,7 +12,8 @@ export default async function RecipePage({ params }: { params: { id: string } })
   const recipe = await getRecipeById(params.id)
 
   // Get the session safely
-  const { session } = await getSessionSafely()
+  const sessionData = await getSessionSafely()
+  const session = sessionData?.session || null
 
   // Check if the recipe is saved
   const saved = session ? await isRecipeSaved(params.id) : false

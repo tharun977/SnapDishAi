@@ -6,7 +6,8 @@ import { ProfileForm } from "@/components/profile/profile-form"
 import { SavedRecipes } from "@/components/profile/saved-recipes"
 
 export default async function ProfilePage() {
-  const { session } = await getSessionSafely()
+  const sessionData = await getSessionSafely()
+  const session = sessionData?.session
 
   if (!session) {
     redirect("/signin")

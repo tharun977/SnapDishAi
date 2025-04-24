@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, ImageIcon } from "lucide-react"
+import { Loader2, ImageIcon, Sparkles, Brain } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { identifyDish } from "@/app/actions"
@@ -16,6 +16,8 @@ export function ImageUploader() {
   const [preview, setPreview] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [processingStage, setProcessingStage] = useState<string>("")
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -68,6 +70,8 @@ export function ImageUploader() {
 
     try {
       setIsUploading(true)
+      setIsProcessing(true)
+      setProcessingStage("Analyzing your food image...")
       setError(null)
 
       const formData = new FormData()
@@ -78,7 +82,28 @@ export function ImageUploader() {
         description: "Please wait while we analyze your food image...",
       })
 
+      // Simulate AI processing stages for better UX
+      const processingStages = [
+        "Analyzing image features...",
+        "Identifying food items...",
+        "Searching for matching recipes...",
+        "Generating recipe details...",
+      ]
+
+      let stageIndex = 0
+      const stageInterval = setInterval(() => {
+        if (stageIndex < processingStages.length) {
+          setProcessingStage(processingStages[stageIndex])
+          stageIndex++
+        } else {
+          clearInterval(stageInterval)
+        }
+      }, 1500)
+
       const result = await identifyDish(formData)
+
+      // Clear the interval when we get the result
+      clearInterval(stageInterval)
 
       if (result.success) {
         const confidencePercent = Math.round((result.confidence || 0) * 100)
@@ -108,6 +133,7 @@ export function ImageUploader() {
       })
     } finally {
       setIsUploading(false)
+      setIsProcessing(false)
     }
   }
 
@@ -142,11 +168,22 @@ export function ImageUploader() {
                 <p className="text-xs text-neutral-600 dark:text-neutral-400">PNG, JPG, GIF up to 10MB</p>
               </div>
             )}
+
+            {isProcessing && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 rounded-t-lg">
+                <Loader2 className="h-8 w-8 animate-spin text-purple-400 mb-3" />
+                <p className="text-white text-sm">{processingStage}</p>
+                <div className="mt-2 flex items-center">
+                  <Brain className="h-4 w-4 text-purple-400 mr-1" />
+                  <p className="text-purple-400 text-xs">AI-Powered Recognition</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400 px-4">{error}</p>}
 
-          {preview && (
+          {preview && !isProcessing && (
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 px-4">
               {image?.name} (
               {(image?.size || 0) / 1024 < 1000
@@ -169,9 +206,17 @@ export function ImageUploader() {
                 Identifying dish...
               </>
             ) : (
-              "Identify Dish & Get Recipe"
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Identify Dish & Get Recipe
+              </>
             )}
           </Button>
+          <div className="mt-2 text-center">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Powered by Gemini 1.5 with multiple recognition models
+            </p>
+          </div>
         </div>
       </form>
     </Card>

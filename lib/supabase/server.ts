@@ -1,23 +1,62 @@
-import { cookies, headers } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import type { Database } from "./database.types";
+import { createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
 
-// Create the Supabase client (used inside server components only)
-export const createClient = () => {
-  return createServerComponentClient<Database>({
-    cookies,
-  });
-};
+export const createServerSupabaseClient = async () => {
+  const cookieStore = cookies()
 
-// This is safe to call in server components to get the session
-export const getSessionSafely = async () => {
-  const supabase = createClient();
-  const result = await supabase.auth.getSession();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-  if (!result || !result.data || !result.data.session) {
-    console.warn("⚠️ No session found");
-    return null; // Or throw error / redirect logic if needed
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Your project's URL and Key are required to create a Supabase client!")
   }
 
-  return result.data.session;
-};
+  return createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value
+      },
+      set(name: string, value: string, options: { path: string; maxAge: number; domain?: string }) {
+        try {
+          cookieStore.set({ name, value, ...options })
+        } catch (error) {
+          // Handle cookie setting error
+          console.error("Error setting cookie:", error)
+        }
+      },
+      remove(name: string, options: { path: string; domain?: string }) {
+        try {
+          cookieStore.set({ name, value: "", ...options, maxAge: 0 })
+        } catch (error) {
+          // Handle cookie removal error
+          console.error("Error removing cookie:", error)
+        }
+      },
+    },
+    auth: {
+      detectSessionInUrl: true,
+      flowType: "pkce",
+    },
+  })
+}
+
+// Helper function to get session safely
+export const getSessionSafely = async () => {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data, error } = await supabase.auth.getSession()
+
+    if (error) {
+      console.error("Error getting session:", error)
+      return { session: null, user: null }
+    }
+
+    return {
+      session: data.session,
+      user: data.session?.user || null,
+    }
+  } catch (error) {
+    console.error("Error in getSessionSafely:", error)
+    return { session: null, user: null }
+  }
+}
