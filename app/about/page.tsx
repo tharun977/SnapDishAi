@@ -24,22 +24,15 @@ export default function AboutPage() {
         <div className="mx-auto max-w-3xl">
           <h2 className="mb-6 text-3xl font-bold text-black dark:text-white">Our Story</h2>
           <div className="prose prose-lg dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-400">
-            <p>
-              SnapDish AI was born from a simple observation: people love food they see, but often don't know how to
-              make it. Our founder, a passionate home cook, frequently found herself taking photos of dishes at
-              restaurants or from social media, wishing she knew how to recreate them at home.
-            </p>
-            <p>
-              In 2023, we assembled a team of AI engineers, food scientists, and cooking enthusiasts to solve this
-              problem. By combining advanced computer vision technology with a comprehensive recipe database, we created
-              a platform that can identify virtually any dish from a photo and provide detailed instructions on how to
-              make it.
-            </p>
-            <p>
-              What started as a simple idea has grown into a powerful tool used by food lovers, home cooks, and
-              professional chefs around the world. Our AI continues to learn and improve with each dish it identifies,
-              making our recipe recommendations more accurate and tailored to your preferences.
-            </p>
+          <p>
+            SnapDish AI began as a personal passion project. As someone who’s always been fascinated by both technology and food, I found myself constantly snapping photos of incredible dishes—whether from restaurants, friends’ kitchens, or trending posts on social media—wishing I had a way to recreate them at home.
+          </p>
+          <p>
+            This year, I set out to build something that could bridge that gap. I developed a system that uses computer vision to recognize dishes from photos and match them with detailed recipes. The process involved countless hours of experimenting with models, training datasets, and refining a recipe database to make the platform smart, accurate, and helpful.
+          </p>
+          <p>
+            What started as a small idea is now a growing platform trusted by home cooks, foodies, and professional chefs globally. SnapDish AI continues to evolve, learning with every new image it sees and refining its recommendations to suit each user’s unique taste and preferences.
+          </p>
           </div>
         </div>
       </section>
