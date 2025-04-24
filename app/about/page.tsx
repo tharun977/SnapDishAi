@@ -25,7 +25,7 @@ export default function AboutPage() {
           <h2 className="mb-6 text-3xl font-bold text-black dark:text-white">Our Story</h2>
           <div className="prose prose-lg dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-400">
           <p>
-            SnapDish AI began as a personal passion project. As someone who’s always been fascinated by both technology and food, I found myself constantly snapping photos of incredible dishes—whether from restaurants, friends’ kitchens, or trending posts on social media—wishing I had a way to recreate them at home.
+            SnapDish AI began as a personal passion project. As someone who’s always been fascinated by both technology and food, I found myself constantly snapping photos of incredible dishes whether from restaurants, friends’ kitchens, or trending posts on social media wishing I had a way to recreate them at home.
           </p>
           <p>
             This year, I set out to build something that could bridge that gap. I developed a system that uses computer vision to recognize dishes from photos and match them with detailed recipes. The process involved countless hours of experimenting with models, training datasets, and refining a recipe database to make the platform smart, accurate, and helpful.
