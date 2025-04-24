@@ -282,6 +282,5 @@ Contributions are welcome! Please fork the repository and create a PR.
 
 This project is licensed under the [MIT License](LICENSE).
 
----
 
 For more information and updates, visit our [official website](https://snapdishai.vercel.app) or follow us on [Twitter](https://twitter.com/echotharun).
