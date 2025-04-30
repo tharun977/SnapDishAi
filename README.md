@@ -1,7 +1,7 @@
 
 # 🍽️ SnapDish AI
 
-**SnapDish AI** is an innovative AI-powered web application that transforms the way users interact with food. By leveraging advanced computer vision and AI technologies, SnapDish AI allows users to identify dishes from images and discover detailed recipes, making cooking more accessible and enjoyable for everyone.
+**SnapDish AI** is an innovative AI-powered web application that transforms the way users interact with food. By leveraging advanced computer vision and AI technologies, SnapDish AI allows users to identify dishes from images and discover detailed recipes, making cooking more accessible and enjoyable for everyonee.
 
 ![SnapDish AI Banner](./public/images/snapdish-banner.png)
 
